@@ -1,4 +1,6 @@
 import json
+import os
+from pathlib import Path
 from typing import Callable
 
 import safetensors
@@ -58,8 +60,17 @@ class Zonos(nn.Module):
     def from_pretrained(
         cls, repo_id: str, revision: str | None = None, device: str = DEFAULT_DEVICE, **kwargs
     ) -> "Zonos":
-        config_path = hf_hub_download(repo_id=repo_id, filename="config.json", revision=revision)
-        model_path = hf_hub_download(repo_id=repo_id, filename="model.safetensors", revision=revision)
+        cwd = Path.cwd()
+        base_path = Path(cwd) / "models"
+        normalized = os.path.normpath(repo_id)
+        sub_path = os.path.basename(normalized)
+        config_path = base_path / sub_path / "config.json"
+        model_path = base_path / sub_path / "model.safetensors"
+
+        # the below is the old ways
+        # config_path = hf_hub_download(repo_id=repo_id, filename="config.json", revision=revision)
+        # model_path = hf_hub_download(repo_id=repo_id, filename="model.safetensors", revision=revision)
+
         return cls.from_local(config_path, model_path, device, **kwargs)
 
     @classmethod
